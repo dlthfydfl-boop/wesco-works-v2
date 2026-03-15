@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-wesco-red: #E1431B;
+  --color-wesco-dark: #231815;
+  --color-wesco-gray: #505050;
+  --color-page-bg: #F7F8FA;
+}
+
+body {
+  background: #F7F8FA;
+  font-family: 'Malgun Gothic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #1A1A1A;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+/* Remove number input spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
