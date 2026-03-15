@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore, canAccess } from '@/stores/auth';
+import { WevisFAB } from '@/components/wevis/WevisFAB';
 
 const MENU_ITEMS = [
   {
@@ -175,6 +176,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </div>
       </nav>
+
+      {/* WEVIS AI Assistant FAB */}
+      <WevisFAB />
     </div>
   );
 }

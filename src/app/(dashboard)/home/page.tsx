@@ -14,6 +14,7 @@ import { useUpcomingInspections } from '@/hooks/useInstallations';
 import { formatWon } from '@/lib/utils';
 import { MonthlyChart } from './MonthlyChart';
 import { InsightPanel } from '@/components/ui/InsightPanel';
+import { WevisSearchBar } from '@/components/wevis/WevisSearchBar';
 
 export default function HomePage() {
   const router = useRouter();
@@ -29,6 +30,9 @@ export default function HomePage() {
 
   return (
     <div className="space-y-6">
+      {/* WEVIS Search Bar */}
+      <WevisSearchBar />
+
       {/* Page title */}
       <div>
         <h1 className="text-xl font-bold text-gray-900">현황판</h1>
@@ -172,6 +176,12 @@ export default function HomePage() {
           </Button>
           <Button variant="secondary" onClick={() => router.push('/materials')}>
             자재 확인
+          </Button>
+          <Button variant="secondary" onClick={() => router.push('/sales')}>
+            영업활동 기록
+          </Button>
+          <Button variant="secondary" onClick={() => router.push('/meetings')}>
+            회의록
           </Button>
         </div>
       </div>
