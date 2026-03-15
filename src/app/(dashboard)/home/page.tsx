@@ -10,6 +10,7 @@ import { useProductionStats } from '@/hooks/useProduction';
 import { useServiceStats } from '@/hooks/useService';
 import { useMaterialStats } from '@/hooks/useMaterials';
 import { useFinanceSummary, useMonthlyOrderTrend } from '@/hooks/useManagement';
+import { useUpcomingInspections } from '@/hooks/useInstallations';
 import { formatWon } from '@/lib/utils';
 import { MonthlyChart } from './MonthlyChart';
 import { InsightPanel } from '@/components/ui/InsightPanel';
@@ -22,6 +23,7 @@ export default function HomePage() {
   const materialStats = useMaterialStats();
   const financeSummary = useFinanceSummary();
   const monthlyTrend = useMonthlyOrderTrend();
+  const inspections = useUpcomingInspections();
 
   const isLoading = orderStats.isLoading || productionStats.isLoading || serviceStats.isLoading;
 
@@ -44,13 +46,14 @@ export default function HomePage() {
       <div>
         <h2 className="text-base font-semibold text-gray-800 mb-3">오늘 할 일</h2>
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <SkeletonSummary />
             <SkeletonSummary />
             <SkeletonSummary />
             <SkeletonSummary />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <SummaryCard
               label="신규 주문"
               value={`${orderStats.data?.newOrders || 0}건`}
@@ -82,6 +85,18 @@ export default function HomePage() {
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              }
+            />
+            <SummaryCard
+              label="점검 예정"
+              value={`${(inspections.data?.overdue.length || 0) + (inspections.data?.today.length || 0)}건`}
+              color={(inspections.data?.overdue.length || 0) > 0 ? 'red' : 'green'}
+              onClick={() => router.push('/service')}
+              sub={inspections.data?.overdue.length ? `연체 ${inspections.data.overdue.length}건` : undefined}
+              icon={
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               }
             />

@@ -79,6 +79,15 @@ export function getStatusColor(status: string): { bg: string; text: string } {
     '부족': { bg: 'bg-red-50', text: 'text-red-600' },
     '합격': { bg: 'bg-green-50', text: 'text-green-700' },
     '불합격': { bg: 'bg-red-50', text: 'text-red-700' },
+    '정상': { bg: 'bg-green-50', text: 'text-green-700' },
+    '점검필요': { bg: 'bg-amber-50', text: 'text-amber-700' },
+    '고장': { bg: 'bg-red-50', text: 'text-red-700' },
+    '폐기': { bg: 'bg-gray-100', text: 'text-gray-500' },
+    '주의': { bg: 'bg-amber-50', text: 'text-amber-700' },
+    '불량': { bg: 'bg-red-50', text: 'text-red-700' },
+    '예정': { bg: 'bg-blue-50', text: 'text-blue-700' },
+    '연기': { bg: 'bg-purple-50', text: 'text-purple-700' },
+    '취소': { bg: 'bg-gray-100', text: 'text-gray-500' },
   };
   return colors[status] || { bg: 'bg-gray-50', text: 'text-gray-700' };
 }

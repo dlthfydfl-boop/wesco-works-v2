@@ -3,6 +3,7 @@ import { getWorkOrders } from '@/lib/api/production';
 import { getParts, getBoms } from '@/lib/api/materials';
 import { getCsTickets, getDeliveries } from '@/lib/api/service';
 import { getReceivables } from '@/lib/api/management';
+import { getInstallations, getInspectionSchedules, getInspectionRecords } from '@/lib/api/installations';
 import { dDay, formatCurrency } from '@/lib/utils';
 
 export interface Insight {
@@ -110,6 +111,29 @@ export async function generateHomeInsights(): Promise<Insight[]> {
         module: 'home',
         priority: 2,
       });
+    }
+
+    // Inspection schedules
+    try {
+      const schedules = await getInspectionSchedules({ status: '예정' });
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayOrOverdue = schedules.filter((s) => s.scheduledDate <= todayStr);
+      if (todayOrOverdue.length > 0) {
+        insights.push({
+          id: 'home-inspect-due',
+          type: 'warning',
+          iconPath: ICONS.wrench,
+          title: `점검 예정 ${todayOrOverdue.length}건`,
+          description: todayOrOverdue.length === 1
+            ? `${todayOrOverdue[0].serialNo} 점검이 필요합니다`
+            : `오늘 또는 연체된 점검 ${todayOrOverdue.length}건`,
+          action: { label: '점검 관리', href: '/service' },
+          module: 'home',
+          priority: 1,
+        });
+      }
+    } catch {
+      // Silently handle
     }
 
     // Monthly performance
@@ -347,7 +371,12 @@ export async function generateServiceInsights(): Promise<Insight[]> {
   const insights: Insight[] = [];
 
   try {
-    const tickets = await getCsTickets();
+    const [tickets, installations, schedules, records] = await Promise.all([
+      getCsTickets(),
+      getInstallations().catch(() => []),
+      getInspectionSchedules({ status: '예정' }).catch(() => []),
+      getInspectionRecords().catch(() => []),
+    ]);
 
     // Long open tickets
     const sevenDaysAgo = new Date();
@@ -369,7 +398,67 @@ export async function generateServiceInsights(): Promise<Insight[]> {
       });
     }
 
-    // Recurring model issues
+    // Overdue inspections
+    const today = new Date().toISOString().split('T')[0];
+    const overdue = schedules.filter((s) => s.scheduledDate < today);
+    if (overdue.length > 0) {
+      insights.push({
+        id: 'svc-overdue-inspect',
+        type: 'warning',
+        iconPath: ICONS.alert,
+        title: `정기점검 연체 ${overdue.length}건`,
+        description: '예정일을 초과한 점검 건이 있습니다',
+        action: { label: '점검 관리', href: '/service' },
+        module: 'service',
+        priority: 1,
+      });
+    }
+
+    // Warranty expiring soon (30 days)
+    const thirtyDaysLater = new Date();
+    thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
+    const thirtyStr = thirtyDaysLater.toISOString().split('T')[0];
+    const expiringWarranty = installations.filter(
+      (i) => i.warrantyExpire && i.warrantyExpire >= today && i.warrantyExpire <= thirtyStr
+    );
+    if (expiringWarranty.length > 0) {
+      insights.push({
+        id: 'svc-warranty-expire',
+        type: 'info',
+        iconPath: ICONS.info,
+        title: `보증 만료 예정 장비 ${expiringWarranty.length}대`,
+        description: '30일 이내 보증이 만료되는 장비가 있습니다',
+        action: { label: '장비 확인', href: '/service' },
+        module: 'service',
+        priority: 2,
+      });
+    }
+
+    // Recurring model issues (from inspection records)
+    const modelFaults = new Map<string, number>();
+    records.forEach((r) => {
+      if (r.overallResult === '불량') {
+        const inst = installations.find((i) => i.id === r.installationId);
+        if (inst) {
+          modelFaults.set(inst.model, (modelFaults.get(inst.model) || 0) + 1);
+        }
+      }
+    });
+    Array.from(modelFaults.entries())
+      .filter(([, count]) => count >= 3)
+      .forEach(([model, count]) => {
+        insights.push({
+          id: `svc-model-pattern-${model}`,
+          type: 'suggestion',
+          iconPath: ICONS.wrench,
+          title: `${model} 모델 최근 불량 ${count}건`,
+          description: '패턴 확인이 필요합니다',
+          module: 'service',
+          priority: 2,
+        });
+      });
+
+    // Recurring model issues from CS tickets
     const modelCount = new Map<string, number>();
     tickets.forEach((t) => {
       if (t.model) modelCount.set(t.model, (modelCount.get(t.model) || 0) + 1);
@@ -397,6 +486,21 @@ export async function generateServiceInsights(): Promise<Insight[]> {
         iconPath: ICONS.flash,
         title: `긴급 A/S ${urgent.length}건`,
         description: urgent.map((t) => t.customerName).slice(0, 3).join(', '),
+        module: 'service',
+        priority: 1,
+      });
+    }
+
+    // Broken installations
+    const broken = installations.filter((i) => i.status === '고장');
+    if (broken.length > 0) {
+      insights.push({
+        id: 'svc-broken',
+        type: 'warning',
+        iconPath: ICONS.alert,
+        title: `고장 장비 ${broken.length}대`,
+        description: broken.slice(0, 3).map((i) => i.serialNo).join(', '),
+        action: { label: '장비 확인', href: '/service' },
         module: 'service',
         priority: 1,
       });
