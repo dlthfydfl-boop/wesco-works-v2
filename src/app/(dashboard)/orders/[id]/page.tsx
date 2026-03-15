@@ -159,8 +159,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       </DataCard>
 
       {/* Actions */}
-      {nextAction && (
-        <div className="flex gap-3">
+      <div className="flex gap-3">
+        <Button
+          variant="secondary"
+          onClick={() => window.open(`/print/order/${order.id}`, '_blank')}
+          className="flex-1"
+        >
+          주문서 출력
+        </Button>
+        {nextAction && (
           <Button
             onClick={handleStatusUpdate}
             disabled={updateStatus.isPending}
@@ -168,8 +175,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           >
             {updateStatus.isPending ? '처리 중...' : nextAction}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

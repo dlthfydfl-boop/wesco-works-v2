@@ -76,6 +76,9 @@ export function getStatusColor(status: string): { bg: string; text: string } {
     '처리중': { bg: 'bg-amber-50', text: 'text-amber-700' },
     '완료': { bg: 'bg-green-50', text: 'text-green-700' },
     '보류': { bg: 'bg-gray-50', text: 'text-gray-500' },
+    '부족': { bg: 'bg-red-50', text: 'text-red-600' },
+    '합격': { bg: 'bg-green-50', text: 'text-green-700' },
+    '불합격': { bg: 'bg-red-50', text: 'text-red-700' },
   };
   return colors[status] || { bg: 'bg-gray-50', text: 'text-gray-700' };
 }

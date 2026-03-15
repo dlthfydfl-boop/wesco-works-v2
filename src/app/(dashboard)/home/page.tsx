@@ -12,6 +12,7 @@ import { useMaterialStats } from '@/hooks/useMaterials';
 import { useFinanceSummary, useMonthlyOrderTrend } from '@/hooks/useManagement';
 import { formatWon } from '@/lib/utils';
 import { MonthlyChart } from './MonthlyChart';
+import { InsightPanel } from '@/components/ui/InsightPanel';
 
 export default function HomePage() {
   const router = useRouter();
@@ -87,6 +88,9 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      {/* AI Insights */}
+      <InsightPanel module="home" maxItems={5} />
 
       {/* Quick Stats */}
       <div>

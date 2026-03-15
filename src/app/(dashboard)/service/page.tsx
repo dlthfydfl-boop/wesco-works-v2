@@ -8,7 +8,10 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
+import { InsightPanel } from '@/components/ui/InsightPanel';
+import { Calendar } from '@/components/ui/Calendar';
 import { useCsTickets, useDeliveries, useCreateCsTicket } from '@/hooks/useService';
+import { useToastStore } from '@/stores/toast';
 import { formatDate } from '@/lib/utils';
 
 const TABS = ['설치 현황', 'A/S 접수', '장비 이력'];
@@ -27,6 +30,7 @@ export default function ServicePage() {
           </Button>
         }
       />
+      <InsightPanel module="service" />
       <TabBar tabs={TABS} active={activeTab} onChange={(t) => { setActiveTab(t); setShowNewTicket(false); }} />
 
       {activeTab === '설치 현황' && <DeliveryList />}
@@ -38,32 +42,86 @@ export default function ServicePage() {
 
 function DeliveryList() {
   const { data: deliveries, isLoading } = useDeliveries();
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+
+  const calendarEvents = useMemo(() => {
+    if (!deliveries) return [];
+    const events: { id: string; date: string; label: string; color: 'red' | 'blue' | 'green' | 'amber' }[] = [];
+
+    deliveries.forEach((d) => {
+      if (d.shipDate) {
+        events.push({
+          id: `${d.id}-ship`,
+          date: d.shipDate,
+          label: `${d.customerName} 발송`,
+          color: 'blue',
+        });
+      }
+      if (d.installDate) {
+        events.push({
+          id: `${d.id}-install`,
+          date: d.installDate,
+          label: `${d.customerName} 설치`,
+          color: d.status === '설치완료' ? 'green' : 'amber',
+        });
+      }
+    });
+
+    return events;
+  }, [deliveries]);
 
   if (isLoading) {
     return <div className="space-y-3"><SkeletonCard /><SkeletonCard /></div>;
   }
 
-  if (!deliveries || deliveries.length === 0) {
-    return <EmptyState title="설치 현황이 없습니다" />;
-  }
-
   return (
-    <div className="space-y-2">
-      {deliveries.map((d) => (
-        <DataCard key={d.id}>
-          <div className="flex items-start justify-between mb-2">
-            <span className="text-sm font-semibold text-gray-900">{d.orderNo}</span>
-            <StatusBadge status={d.status} />
-          </div>
-          <p className="text-base text-gray-800">{d.customerName}</p>
-          <p className="text-sm text-gray-500">{d.model} x {d.qty}</p>
-          <div className="flex items-center justify-between text-sm text-gray-400 mt-2">
-            <span>발송: {d.shipDate ? formatDate(d.shipDate) : '-'}</span>
-            <span>설치: {d.installDate ? formatDate(d.installDate) : '-'}</span>
-          </div>
-        </DataCard>
-      ))}
-    </div>
+    <>
+      <div className="flex gap-2 mb-3">
+        <button
+          onClick={() => setViewMode('list')}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            viewMode === 'list' ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 border border-gray-200'
+          }`}
+        >
+          목록
+        </button>
+        <button
+          onClick={() => setViewMode('calendar')}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+            viewMode === 'calendar' ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 border border-gray-200'
+          }`}
+        >
+          달력
+        </button>
+      </div>
+
+      {viewMode === 'calendar' ? (
+        <Calendar events={calendarEvents} />
+      ) : (
+        <>
+          {!deliveries || deliveries.length === 0 ? (
+            <EmptyState title="설치 현황이 없습니다" />
+          ) : (
+            <div className="space-y-2">
+              {deliveries.map((d) => (
+                <DataCard key={d.id}>
+                  <div className="flex items-start justify-between mb-2">
+                    <span className="text-sm font-semibold text-gray-900">{d.orderNo}</span>
+                    <StatusBadge status={d.status} />
+                  </div>
+                  <p className="text-base text-gray-800">{d.customerName}</p>
+                  <p className="text-sm text-gray-500">{d.model} x {d.qty}</p>
+                  <div className="flex items-center justify-between text-sm text-gray-400 mt-2">
+                    <span>발송: {d.shipDate ? formatDate(d.shipDate) : '-'}</span>
+                    <span>설치: {d.installDate ? formatDate(d.installDate) : '-'}</span>
+                  </div>
+                </DataCard>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </>
   );
 }
 
@@ -71,6 +129,7 @@ function CsTicketList({ showNew, onCloseNew }: { showNew: boolean; onCloseNew: (
   const [statusFilter, setStatusFilter] = useState('전체');
   const { data: tickets, isLoading } = useCsTickets();
   const createTicket = useCreateCsTicket();
+  const addToast = useToastStore((s) => s.addToast);
 
   const filtered = useMemo(() => {
     if (!tickets) return [];
@@ -90,9 +149,10 @@ function CsTicketList({ showNew, onCloseNew }: { showNew: boolean; onCloseNew: (
         description: fd.get('description') as string,
         priority: fd.get('priority') as '긴급' | '보통' | '낮음',
       });
+      addToast('success', 'A/S가 접수되었습니다');
       onCloseNew();
     } catch {
-      alert('접수에 실패했습니다');
+      addToast('error', '접수에 실패했습니다');
     }
   };
 

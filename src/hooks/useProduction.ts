@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getQueryClient } from '@/lib/query-client';
+import { useToastStore } from '@/stores/toast';
 import {
   getWorkOrders,
   getWorkOrder,
@@ -28,11 +29,16 @@ export function useWorkOrder(id: string) {
 
 export function useCreateWorkOrder() {
   const queryClient = getQueryClient();
+  const addToast = useToastStore.getState().addToast;
   return useMutation({
     mutationFn: createWorkOrder,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workOrders'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      addToast('success', '생산 요청이 등록되었습니다');
+    },
+    onError: () => {
+      addToast('error', '생산 요청 등록에 실패했습니다');
     },
   });
 }

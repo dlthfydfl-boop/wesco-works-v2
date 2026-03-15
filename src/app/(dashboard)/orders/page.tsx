@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
 import { useOrders } from '@/hooks/useOrders';
+import { InsightPanel } from '@/components/ui/InsightPanel';
 import { formatCurrency, dDay } from '@/lib/utils';
 
 const STATUS_TABS = ['전체', '주문등록', '생산중', '발송준비', '완료'];
@@ -55,6 +56,8 @@ export default function OrdersPage() {
           </Button>
         }
       />
+
+      <InsightPanel module="orders" />
 
       <SearchBar
         placeholder="주문번호 또는 고객사 검색"

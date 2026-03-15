@@ -6,6 +6,7 @@ import { DataCard } from '@/components/ui/DataCard';
 import { SkeletonSummary, SkeletonCard } from '@/components/ui/SkeletonCard';
 import { useOrderStats } from '@/hooks/useOrders';
 import { useFinanceSummary, useMonthlyOrderTrend, useReceivables, usePayables } from '@/hooks/useManagement';
+import { InsightPanel } from '@/components/ui/InsightPanel';
 import { formatWon, formatCurrency, formatDate } from '@/lib/utils';
 import { MonthlyChart } from '../home/MonthlyChart';
 
@@ -21,6 +22,8 @@ export default function ManagementPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="경영현황" />
+
+      <InsightPanel module="management" />
 
       {/* KPI Row */}
       {isLoading ? (

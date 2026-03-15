@@ -146,7 +146,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 p-4 pb-24 md:pb-4 min-h-[calc(100vh-58px)]">
+        <main className="flex-1 p-4 pb-24 md:pb-4 min-h-[calc(100vh-58px)] overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="max-w-5xl mx-auto">
             {children}
           </div>

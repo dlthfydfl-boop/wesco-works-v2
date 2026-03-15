@@ -11,6 +11,7 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
 import { useWorkOrders, useProductionStats } from '@/hooks/useProduction';
+import { InsightPanel } from '@/components/ui/InsightPanel';
 import { dDay } from '@/lib/utils';
 
 const STATUS_TABS = ['전체', '대기', '생산중', '생산완료', '검수완료'];
@@ -64,6 +65,8 @@ export default function ProductionPage() {
           }
         />
       </div>
+
+      <InsightPanel module="production" />
 
       <TabBar tabs={STATUS_TABS} active={statusFilter} onChange={setStatusFilter} />
 

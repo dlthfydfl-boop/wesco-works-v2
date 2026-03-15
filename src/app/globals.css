@@ -31,3 +31,13 @@ input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* Safe area bottom for iOS */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Momentum scrolling for mobile */
+.momentum-scroll {
+  -webkit-overflow-scrolling: touch;
+}
